@@ -68,4 +68,39 @@ services:
         - "5778:5778"
 ```
 
+# Jaeger Spark dependencies
 
+### run with docker and Kubernetes
+```$xslt
+kubectl run --restart=Never spark-dependencies --env="STORAGE=elasticsearch" --env="ES_NODES=http://elasticsearch-logging:9200" --image="jaegertracing/spark-dependencies" -n kube-system
+ docker run  --rm  --name  spark-dependencies  --env STORAGE=elasticsearch --env ES_NODES=http://172.23.4.154:32104/ jaegertracing/spark-dependencies
+```
+
+
+### spark-dependencies cronjab In Kubernetes
+```$xslt
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  namespace: kube-system
+  name: spark-dependencies
+  labels:
+    app.kubernetes.io/name: spark-dependencies
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: spark-dependencies
+              image: jaegertracing/spark-dependencies
+              imagePullPolicy: IfNotPresent
+              env:
+              - name: STORAGE
+                value: elasticsearch
+                name: ES_NODES
+                value: http://elasticsearch-logging:9200
+          restartPolicy: OnFailure
+```
