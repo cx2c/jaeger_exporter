@@ -262,10 +262,7 @@ func Curd() {
         //}
     }
     fmt.Println("done... ...")
-    fmt.Println("----------")
-    fmt.Println("----------")
-    fmt.Println("----------")
-    fmt.Println("----------")
+
     // 根据 时间来筛选
     fmt.Println("begine2... ...")
     rangeQuery := elastic.NewRangeQuery("startTimeMillis").Gte(1542499480006).Lte(1544499480006)
