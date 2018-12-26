@@ -1,4 +1,4 @@
-# Jaeger  Prometheus Exporter  (Elasticsearch)
+# Prometheus Jaeger  Exporter  (Elasticsearch)
  
 > 从opentracing jaeger后端存储Elasticsearch获取并分析数据，统计operation及service的频率，暴露数据给prometheus。
 > add 从Elasticsearch分析并获取opentracing error，prometheus 根据error完成报警触发
