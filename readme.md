@@ -1,6 +1,7 @@
 # Jaeger  Prometheus Exporter  (Elasticsearch)
  
 > 从opentracing jaeger后端存储Elasticsearch获取并分析数据，统计operation及service的频率，暴露数据给prometheus。
+> add 从Elasticsearch分析并获取opentracing error，prometheus 根据error完成报警触发
 
 ### 依赖
 ```$xslt
@@ -8,7 +9,7 @@ go get github.com/elastic/go-elasticsearch
 go get gopkg.in/olivere/elastic.v6
 go get github.com/prometheus/client_golang
 go get github.com/prometheus/client_golang/prometheus
-
+go get github.com/garyburd/redigo/redis
 ```
 ### build
 ```$xslt
@@ -143,3 +144,11 @@ spec:
                 value: http://elasticsearch-logging:9200
           restartPolicy: OnFailure
 ```
+
+
+# In Kubernetes
+```
+.kubernetes/jaeger_exporter.yaml        ## yaml of prometheus exporter in kubernetes 
+.kubernetes/jaeger_monitoring.yaml      ## add prometheus target for this exporter
+.kubernetes/Jaeger-grafana.json         ## grafana dashboard 
+``` 
