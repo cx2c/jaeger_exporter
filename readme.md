@@ -148,7 +148,9 @@ spec:
 
 # In Kubernetes
 ```
-.kubernetes/jaeger_exporter.yaml        ## yaml of prometheus exporter in kubernetes 
+.kubernetes/jaeger_exporter.yaml        ## yaml of prometheus exporter in Kubernetes 
 .kubernetes/jaeger_monitoring.yaml      ## add prometheus target for this exporter
 .kubernetes/Jaeger-grafana.json         ## grafana dashboard 
+.kubernetes/jaeger_dependencies.yaml    ## jaeger dependencies spark task in Kubernetes cronjob
+.kubernetes/es_hq.yaml                  ## es management tool ElasticsrarchHQ in Kubernetes
 ``` 

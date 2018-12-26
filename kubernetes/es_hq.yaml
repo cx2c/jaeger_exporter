@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  generation: 1
+  labels:
+    app: es-hq
+  name: es-hq
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: es-hq
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: es-hq
+    spec:
+      containers:
+      - env:
+        - name: HQ_DEFAULT_URL
+#          value: http://elasticsearch-svc:9200
+          value: http://172.23.3.118:30011/ 
+        image: reg-bj.xiaoneng.cn/k8s/elasticsearch-hq:latest
+        imagePullPolicy: Always
+        name: es-hq
+        ports:
+        - containerPort: 5000
+          name: es-hq
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: es-hq
+  name: eslll-svc
+  namespace: default
+spec:
+  ports:
+  - nodePort: 32237
+    port: 5000
+    protocol: TCP
+    targetPort: es-hq
+  selector:
+    app: es-hq
+  type: NodePort

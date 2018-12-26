@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  namespace: kube-system
+  name: spark-dependencies
+  labels:
+    app.kubernetes.io/name: spark-dependencies
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: spark-dependencies
+              image: jaegertracing/spark-dependencies
+              imagePullPolicy: IfNotPresent
+              env:
+              - name: STORAGE
+                value: elasticsearch
+                name: ES_NODES
+                value: http://elasticsearch-logging:9200
+          restartPolicy: OnFailure
