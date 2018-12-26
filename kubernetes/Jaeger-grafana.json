@@ -56,10 +56,95 @@
       "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
-        "h": 6,
+        "h": 9,
         "w": 24,
         "x": 0,
         "y": 0
+      },
+      "id": 16,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(jaeger_operations_duration_1m_errors{}) by (operationname)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Panel Title",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fill": 1,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 9
       },
       "id": 10,
       "legend": {
@@ -146,7 +231,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 15
       },
       "id": 6,
       "legend": {
@@ -174,7 +259,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(jaeger_operations_duration_5m_requests{exported_service=~\".*ai_power\"}) by (operationname)",
+          "expr": "sum(jaeger_operations_qps_requests{exported_service=~\".*ai_power\"}) by (operationname)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -183,7 +268,7 @@
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Ai Power 5m 请求数",
+      "title": "Ai Power 1m 请求数",
       "tooltip": {
         "shared": true,
         "sort": 2,
@@ -232,7 +317,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 21
       },
       "id": 2,
       "legend": {
@@ -320,7 +405,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 27
       },
       "id": 14,
       "legend": {
@@ -348,7 +433,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(jaeger_operations_duration_5m_requests{exported_service=\"eagle\"}) by (operationname)",
+          "expr": "sum(jaeger_operations_duration_5m_requests{exported_service=~\".*eagle\"}) by (operationname)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -360,7 +445,7 @@
       "title": "Eagel 5m 请求数",
       "tooltip": {
         "shared": true,
-        "sort": 0,
+        "sort": 2,
         "value_type": "individual"
       },
       "type": "graph",
@@ -403,7 +488,7 @@
     "list": []
   },
   "time": {
-    "from": "now-4h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {
@@ -434,5 +519,5 @@
   "timezone": "",
   "title": "Jaeger",
   "uid": "QhMpSHymk",
-  "version": 8
+  "version": 10
 }

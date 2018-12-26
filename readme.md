@@ -1,7 +1,15 @@
 # Jaeger  Prometheus Exporter  (Elasticsearch)
-
+ 
 > 从opentracing jaeger后端存储Elasticsearch获取并分析数据，统计operation及service的频率，暴露数据给prometheus。
 
+### 依赖
+```$xslt
+go get github.com/elastic/go-elasticsearch
+go get gopkg.in/olivere/elastic.v6
+go get github.com/prometheus/client_golang
+go get github.com/prometheus/client_golang/prometheus
+
+```
 ### build
 ```$xslt
 $ cd src/kakko/
@@ -25,14 +33,45 @@ docker run -p 2333:2333 reg-tag.xxx.com/k8s/jaeger_exporter:v1.0
 ```
 ### TODO
 ```$xslt
-1. Prometheus query
-2. ...
+1.
+2.
 ```
 
 ### Jaeger Docker-compose
 ```$xslt
 version: '2'
 services:
+  # els:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:6.0.0
+  #   restart: always
+  #   container_name: els
+  #   hostname: els
+  #   networks:
+  #   - elastic-jaeger
+  #   environment:
+  #     - bootstrap.memory_lock=true
+  #     - ES_JAVA_OPTS=-Xms512m -Xmx512m
+  #   ports:
+  #     - "9200:9200"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   mem_limit: 1g
+  #   volumes:
+  #     - esdata1:/usr/share/elasticsearch/data
+  #     - eslog:/usr/share/elasticsearch/logs
+  #     - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:6.0.0
+  #   ports:
+  #     - "5601:5601"
+  #   environment:
+  #     ELASTICSEARCH_URL: http://els:9200
+  #   depends_on:
+  #   - els
+  #   networks:
+  #   - elastic-jaeger
     jaeger-collector:
       image: jaegertracing/jaeger-collector
       ports:
