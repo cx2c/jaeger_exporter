@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  generation: 1
+  labels:
+    app: jaeger-exporter
+  name: jaeger-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger-exporter
+  template:
+    metadata:
+      labels:
+        app: jaeger-exporter
+    spec:
+      containers:
+      - env:
+        - name: HQ_DEFAULT_URL
+          value: http://elasticsearch-logging:9200
+        image: reg-tag.xiaoneng.cn/k8s/jaeger_exporter:v1.0.5
+        imagePullPolicy: Always
+        name: jaeger-exporter
+        ports:
+        - containerPort: 2333
+          name: jaeger-exporter
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jaeger-exporter
+  name: jaeger-exporter
+  namespace: monitoring
+spec:
+  clusterIP: None
+  ports:
+  - name: jaeger-exporter
+    port: 2333
+    protocol: TCP
+    targetPort: jaeger-exporter
+  selector:
+    app: jaeger-exporter
+  type: ClusterIP
