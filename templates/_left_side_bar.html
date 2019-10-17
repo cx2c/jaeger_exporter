@@ -1,0 +1,13 @@
+{#在这里判断是admin用户还是普通用户，加载不同的sidebar#}
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul class="nav" id="side-menu">
+            {% include '_user_profile.html' %}
+            {% if request.user.is_org_admin and request.COOKIES.IN_ADMIN_PAGE != "No" %}
+                {% include '_nav.html' %}
+            {% else %}
+                {% include '_nav_user.html' %}
+            {% endif %}
+        </ul>
+    </div>
+</nav>

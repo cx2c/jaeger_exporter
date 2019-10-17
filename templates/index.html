@@ -1,0 +1,480 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-success pull-right">Users</span>
+                    <h5>{% trans 'Total users' %}</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins"><a href="{% url 'users:user-list' %}">{{ users_count }}</a></h1>
+                    <small>All users</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-info pull-right">Hosts</span>
+                    <h5>{% trans 'Total hosts' %}</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins"><a href="{% url 'assets:asset-list' %}">{{ assets_count }}</a></h1>
+                    <small>All hosts</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-primary pull-right">Online</span>
+                    <h5>{% trans 'Online users' %}</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins"><a href="{% url 'terminal:session-online-list' %}"> <span id="online_users"></span>{{ online_user_count }}</a></h1>
+                    <small>Online users</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-danger pull-right">Connected</span>
+                    <h5>{% trans 'Online sessions' %}</h5>
+
+                </div>
+                <div class="ibox-content">
+                        <h1 class="no-margins"><a href="{% url 'terminal:session-online-list' %}"> <span id="online_hosts"></span>{{ online_asset_count }}</a></h1>
+                    <small>Online sessions</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2 border-bottom white-bg dashboard-header" style="margin-left:15px;height: 346px">
+            <h2>{% trans ' Top 5 Active user' %}</h2>
+            <small>{% trans 'In the past week, a total of ' %}<span class="text-info">{{ user_visit_count_weekly }}</span>{% trans ' users have logged in ' %}<span class="text-success">{{ asset_visit_count_weekly }}</span>{% trans ' times asset.' %}</small>
+            <ul class="list-group clear-list m-t">
+                {% for data in user_visit_count_top_five %}
+                    <li class="list-group-item fist-item">
+                        <span class="pull-right">
+                            {{ data.total }}{% trans ' times/week' %}
+                        </span>
+                        <span class="label ">{{ forloop.counter }}</span> {{ data.user }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-sm-7" id="top10" style="margin-left: -15px;height: 346px;padding: 15px 0 15px 0;"></div>
+        <div class="col-sm-3 white-bg" id="top1" style="margin-left: -15px;height: 346px">
+            <div class="statistic-box">
+                <h4>
+                    {% trans 'Active user asset ratio' %}
+                </h4>
+                <p>
+                    {% trans 'The following graphs describe the percentage of active users per month and assets per user host per month, respectively.' %}
+                </p>
+                <div class="row text-center">
+                    <div class="col-sm-6">
+                        <div id="activeUser"  style="width: 140px; height: 140px;">
+                        </div>
+                        <h5>{% trans 'User' %}</h5>
+                    </div>
+                    <div class="col-sm-6">
+                        <div id="activeAsset" style="width: 140px; height: 140px;"></div>
+                        <h5>{% trans 'Host' %}</h5>
+                    </div>
+                </div>
+                <div class="m-t">
+                    <small></small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br/>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>{% trans 'Top 10 assets in a week' %}</h5>
+                    <div class="ibox-tools">
+                        <a class="collapse-link">
+                            <i class="fa fa-chevron-up"></i>
+                        </a>
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-wrench"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-user"></ul>
+                        <a class="close-link">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="ibox-content ibox-heading">
+                    <h3><i class="fa fa-inbox"></i>{% trans 'Top 10 assets in a week'%}</h3>
+                    <small><i class="fa fa-map-marker"></i>{% trans 'Login frequency and last login record.' %}</small>
+                </div>
+                <div class="ibox-content inspinia-timeline">
+                    {% if week_asset_hot_ten %}
+                        {% for data in week_asset_hot_ten %}
+                            <div class="timeline-item">
+                                <div class="row">
+                                    <div class="col-xs-5 date ellipsis">
+                                        <i class="fa fa-info-circle"></i>
+                                        <strong data-toggle="tooltip" title="{{ data.asset }}">{{ data.asset }}</strong>
+                                        <br/>
+                                        <small class="text-navy">{{ data.total }}{% trans ' times' %}</small>
+                                    </div>
+                                    <div class="col-xs-7 content no-top-border">
+                                        <p class="m-b-xs">{% trans 'The last time a user logged in' %}</p>
+                                        <p>{{ data.last.user }}</p>
+                                        <p>{% trans 'At ' %}{{ data.last.date_start |date:"Y-m-d H:i:s" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center">{% trans '(No)' %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>{% trans 'Last 10 login' %}</h5>
+                    <div class="ibox-tools">
+                        <span class="label label-info-light">10 Messages</span>
+                       </div>
+                </div>
+                <div class="ibox-content ibox-heading">
+                    <h3><i class="fa fa-paper-plane-o"></i> {% trans 'Login record' %}</h3>
+                    <small><i class="fa fa-map-marker"></i>{% trans 'Last 10 login records.' %}</small>
+                </div>
+                <div class="ibox-content">
+                    <div>
+                        <div class="feed-activity-list">
+                            {% if last_login_ten %}
+                                {% for login in last_login_ten %}
+                                    <div class="feed-element">
+                                        <a href="#" class="pull-left">
+                                            <img alt="image" class="img-circle" src="{% static 'img/avatar/user.png' %}">
+                                        </a>
+                                        <div class="media-body ">
+                                            {% ifequal login.is_finished 0 %}
+                                                <small class="pull-right text-navy">{{ login.date_start|timesince }} {% trans 'Before' %}</small>
+                                            {% else %}
+                                                <small class="pull-right">{{ login.date_start|timesince }} {% trans 'Before' %}</small>
+                                            {% endifequal %}
+                                            <strong>{{ login.user }}</strong> {% trans 'Login in ' %}{{ login.asset }} <br>
+                                            <small class="text-muted">{{ login.date_start }}</small>
+
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-center">{% trans '(No)' %}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>{% trans 'Top 10 users in a week' %}</h5>
+                    <div class="ibox-tools">
+                        <a class="collapse-link">
+                            <i class="fa fa-chevron-up"></i>
+                        </a>
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-wrench"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-user"></ul>
+                        <a class="close-link">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="ibox-content ibox-heading">
+                    <h3><i class="fa fa-user"></i>{% trans 'Top 10 users in a week' %}</h3>
+                    <small><i class="fa fa-map-marker"></i>{% trans 'User login frequency and last login record.' %}</small>
+                </div>
+                <div class="ibox-content inspinia-timeline">
+                    {% if week_user_hot_ten %}
+                        {% for data in week_user_hot_ten %}
+                            <div class="timeline-item">
+                                <div class="row">
+                                    <div class="col-xs-5 date ellipsis">
+                                        <i class="fa fa-info-circle"></i>
+                                        <strong data-toggle="tooltip" title="{{ data.user }}">{{ data.user }}</strong>
+                                        <br/>
+                                        <small class="text-navy">{{ data.total }}{% trans ' times' %}</small>
+                                    </div>
+                                    <div class="col-xs-7 content no-top-border">
+                                        <p class="m-b-xs">{% trans 'The last time logged on to the host' %}</p>
+                                        <p>{{ data.last.asset }}</p>
+                                        <p>{% trans 'At ' %}{{ data.last.date_start |date:"Y-m-d H:i:s" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center">{% trans '(No)' %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_foot_js %}
+<script src="{% static 'js/plugins/echarts/echarts.js' %}"></script>
+<script>
+$(document).ready(function(){
+    $('#show').click(function(){
+        $('#show').css('display', 'none');
+        $('#more').css('display', 'block');
+    });
+    $("[data-toggle='tooltip']").tooltip();
+});
+    require.config({
+        paths: {
+            'echarts': '/static/js/plugins/echarts/chart/',
+            'echarts/chart/line': '/static/js/plugins/echarts/chart/line',
+            'echarts/chart/pie': '/static/js/plugins/echarts/chart/pie'
+        }
+    });
+    require(
+        [
+            'echarts',
+            'echarts/chart/line'
+        ],
+        function (ec) {
+            var top10Chart = ec.init(document.getElementById('top10'));
+            var option = {
+                title : {
+                    text: "{% trans 'Monthly data overview' %}",
+                    subtext: "{% trans 'History summary in one month' %}",
+                    x: 'center'
+                },
+                tooltip : {
+                    trigger: 'axis'
+                },
+                backgroundColor: '#fff',
+                legend: {
+                    data:["{% trans 'Login count' %}", "{% trans 'Active users' %}", "{% trans 'Active assets' %}"],
+                    y: 'bottom'
+                },
+                toolbox: {
+                    show : false,
+                    feature : {
+                        magicType : {show: true, type: ['line', 'bar']}
+                    }
+                },
+                calculable : true,
+                xAxis : [
+                    {
+                        type : 'category',
+                        boundaryGap : false,
+                        data : {{ month_str|safe}}
+                    }
+                ],
+                yAxis : [
+                    {
+                        type : 'value'
+                    }
+                ],
+                series : [
+                    {
+                        name:"{% trans 'Login count' %}",
+                        type:'line',
+                        smooth:true,
+                        itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                        data: {{ month_total_visit_count|safe}}
+                    },
+                    {
+                        name:"{% trans 'Active users' %}",
+                        type:'line',
+                        smooth:true,
+                        itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                        data: {{ month_user|safe }}
+                    },
+                    {
+                        name:"{% trans 'Active assets' %}",
+                        type:'line',
+                        smooth:true,
+                        itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                        data: {{ mouth_asset|safe }}
+                    }
+                ]
+            };
+            top10Chart.setOption(option);
+        }
+    );
+    require(
+        [
+            'echarts',
+            'echarts/chart/pie'
+        ],
+        function (ec) {
+            var auChart = ec.init(document.getElementById('activeUser'));
+            var option = {
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{b} <br> {c} ({d}%)"
+                },
+                legend: {
+                    show: false,
+                    orient : 'vertical',
+                    x : 'left',
+                    data:["{% trans 'Monthly active users' %}", "{% trans 'Disable user' %}", "{% trans 'Month not logged in user' %}"]
+                },
+                toolbox: {
+                    show : false,
+                    feature : {
+                        mark : {show: true},
+                        dataView : {show: true, readOnly: false},
+                        magicType : {
+                            show: true,
+                            type: ['pie', 'funnel'],
+                            option: {
+                                funnel: {
+                                    x: '25%',
+                                    width: '50%',
+                                    funnelAlign: 'center',
+                                    max: 1548
+                                }
+                            }
+                        },
+                        restore : {show: true},
+                        saveAsImage : {show: true}
+                    }
+                },
+                calculable : true,
+                series : [
+                    {
+                        name:"{% trans 'Access to the source' %}",
+                        type:'pie',
+                        radius : ['50%', '70%'],
+                        itemStyle : {
+                            normal : {
+                                label : {
+                                    show : false
+                                },
+                                labelLine : {
+                                    show : false
+                                }
+                            },
+                            emphasis : {
+                                label : {
+                                    show : true,
+                                    position : 'center',
+                                    textStyle : {
+                                        fontSize : '5',
+                                        fontWeight : 'bold'
+                                    }
+                                }
+                            }
+                        },
+                        data:[
+                            {value:{{ month_user_active }}, name:"{% trans 'Monthly active users' %}"},
+                            {value:{{ month_user_disabled }}, name:"{% trans 'Disable user' %}"},
+                            {value:{{ month_user_inactive }}, name:"{% trans 'Month not logged in user' %}"}
+                        ]
+                    }
+                ]
+            };
+            auChart.setOption(option);
+        }
+    );
+    require(
+        [
+            'echarts',
+            'echarts/chart/pie'
+        ],
+        function (ec) {
+            var aaChart = ec.init(document.getElementById('activeAsset'));
+            var option = {
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{b} <br> {c} ({d}%)"
+                },
+                legend: {
+                    show: false,
+                    orient : 'vertical',
+                    x : 'left',
+                    data:["{% trans 'Month is logged into the host' %}", "{% trans 'Disable host' %}", "{% trans 'Month not logged on host' %}"]
+                },
+                toolbox: {
+                    show : false,
+                    feature : {
+                        mark : {show: true},
+                        dataView : {show: true, readOnly: false},
+                        magicType : {
+                            show: true,
+                            type: ['pie', 'funnel'],
+                            option: {
+                                funnel: {
+                                    x: '25%',
+                                    width: '50%',
+                                    funnelAlign: 'center',
+                                    max: 1548
+                                }
+                            }
+                        },
+                        restore : {show: true},
+                        saveAsImage : {show: true}
+                    }
+                },
+                calculable : true,
+                series : [
+                    {
+                        name:"{% trans 'Access to the source' %}",
+                        type:'pie',
+                        radius : ['50%', '70%'],
+                        itemStyle : {
+                            normal : {
+                                label : {
+                                    show : false
+                                },
+                                labelLine : {
+                                    show : false
+                                }
+                            },
+                            emphasis : {
+                                label : {
+                                    show : true,
+                                    position : 'center',
+                                    textStyle : {
+                                        fontSize : '5',
+                                        fontWeight : 'bold'
+                                    }
+                                }
+                            }
+                        },
+                        data:[
+                            {value:{{ month_asset_active }}, name:"{% trans 'Month is logged into the host' %}"},
+                            {value:{{ month_asset_disabled }}, name:"{% trans 'Disable host' %}"},
+                            {value:{{ month_asset_inactive }}, name:"{% trans 'Month not logged on host' %}"}
+                        ]
+                    }
+                ]
+            };
+            aaChart.setOption(option);
+        }
+    );
+</script>
+
+{% endblock %}

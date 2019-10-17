@@ -1,0 +1,230 @@
+{% load i18n %}
+<li id="index">
+    <a href="{% url 'index' %}">
+        <i class="fa fa-dashboard" style="width: 14px"></i> <span class="nav-label">{% trans 'Dashboard' %}</span>
+        <span class="label label-info pull-right"></span>
+    </a>
+</li>
+<li id="users">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">{% trans 'Users' %}</span><span
+            class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level active">
+        <li id="user"><a href="{% url 'users:user-list' %}">{% trans 'User list' %}</a></li>
+        <li id="user-group"><a href="{% url 'users:user-group-list' %}">{% trans 'User group' %}</a></li>
+    </ul>
+</li>
+<li id="server">
+    <a href="{% url 'server:server' %}">
+        <i class="fa fa-empire" style="width: 14px"></i> <span class="nav-label">Server</span>
+        <span class="label label-info pull-right"></span>
+    </a>
+</li>
+
+<li id="assets">
+    <a>
+        <i class="fa fa-inbox" style="width: 14px"></i> <span class="nav-label">{% trans 'Assets' %}</span><span
+            class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        {#        <li id="server"><a href="{% url 'assets:server' %}">机器列表</a></li>#}
+        <li id="asset"><a href="/assets/asset/">{% trans 'Asset list' %}</a></li>
+        <li id="domain"><a href="/assets/domain/">{% trans 'Domain list' %}</a></li>
+        <li id="admin-user"><a href="/assets/admin-user/">{% trans 'Admin user' %}</a></li>
+        <li id="system-user"><a href="/assets/system-user/">{% trans 'System user' %}</a></li>
+        <li id="label"><a href="/assets/label/">{% trans 'Labels' %}</a></li>
+        <li id="cmd-filter"><a href="/assets/cmd-filter/">{% trans 'Command filters' %}</a></li>
+    </ul>
+</li>
+{% if LICENSE_VALID %}
+    <li id="applications">
+        <a>
+            <i class="fa fa-th" style="width: 14px"></i> <span class="nav-label">{% trans 'Applications' %}</span><span
+                class="fa arrow"></span>
+        </a>
+        <ul class="nav nav-second-level">
+            <li id="remote-app"><a href="{% url 'applications:remote-app-list' %}">{% trans 'RemoteApp' %}</a></li>
+        </ul>
+    </li>
+{% endif %}
+<li id="perms">
+    <a href="#"><i class="fa fa-edit" style="width: 14px"></i> <span class="nav-label">{% trans 'Perms' %}</span><span
+            class="fa arrow"></span></a>
+    <ul class="nav nav-second-level">
+        <li id="asset-permission">
+            <a href="{% url 'perms:asset-permission-list' %}">{% trans 'Asset permission' %}</a>
+        </li>
+        {% if LICENSE_VALID %}
+            <li id="remote-app-permission">
+                <a href="{% url 'perms:remote-app-permission-list' %}">{% trans 'RemoteApp' %}</a>
+            </li>
+        {% endif %}
+    </ul>
+</li>
+
+<li id="terminal">
+    <a>
+        <i class="fa fa-rocket" style="width: 14px"></i> <span class="nav-label">{% trans 'Sessions' %}</span><span
+            class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="session-online"><a href="{% url 'terminal:session-online-list' %}">{% trans 'Session online' %}</a></li>
+        <li id="session-offline"><a href="{% url 'terminal:session-offline-list' %}">{% trans 'Session offline' %}</a>
+        </li>
+        <li id="command"><a href="{% url 'terminal:command-list' %}">{% trans 'Commands' %}</a></li>
+        <li>
+            <a href="{% url 'terminal:web-terminal' %}" target="_blank">
+                <span class="nav-label">{% trans 'Web terminal' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'terminal:web-sftp' %}" target="_blank">
+                <span class="nav-label">{% trans 'File manager' %}</span>
+            </a>
+        </li>
+        {% if request.user.is_superuser %}
+            <li id="terminal"><a href="{% url 'terminal:terminal-list' %}">{% trans 'Terminal' %}</a></li>
+        {% endif %}
+    </ul>
+</li>
+
+<li id="harbor">
+    <a>
+        <i class="fa fa-contao" style="width: 14px"></i> <span class="nav-label">Harbor</span><span
+            class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="harbor"><a href="{% url 'harbor:list-image' %}">镜像列表</a></li>
+    </ul>
+    <ul class="nav nav-second-level">
+        <li id="harbor_tools"><a href="{% url 'harbor:harbor-tools' %}">仓库工具</a></li>
+    </ul>
+    <ul class="nav nav-second-level">
+        <li id="harbor_replication"><a href="{% url 'harbor:harbor-replication' %}">镜像同步</a></li>
+    </ul>
+    <ul class="nav nav-second-level">
+        <li id="harbor_replication_task"><a href="{% url 'harbor:harbor-replication-tasks' %}">任务列表</a></li>
+    </ul>
+
+</li>
+
+{##}
+{#<li id="tartarus">#}
+{#    <a href="{% url 'tartarus:new_version' %}">#}
+{#        <i class="fa fa-empire" style="width: 14px"></i> <span class="nav-label">小发版</span>#}
+{#        <span class="label label-info pull-right"></span>#}
+{#    </a>#}
+{#</li>#}
+
+
+<li id="tartarus">
+    <a>
+        <i class="fa fa-paypal" style="width: 14px"></i> <span class="nav-label">小发版</span><span
+            class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="new_version"><a href="{% url 'tartarus:new_version' %}">后端提交</a></li>
+    </ul>
+    <ul class="nav nav-second-level">
+        {#                <li id="new_version_front"><a href="{% url 'tartarus:new_version' %}">前端提交</a></li>#}
+        <li id="new_version_front"><a href="javascript:return false;" style="opacity:0.2">前端提交</a></li>
+    </ul>
+    <ul class="nav nav-second-level">
+        {#                <li id="new_version_front"><a href="{% url 'tartarus:new_version' %}">前端提交</a></li>#}
+        <li id="new_version_front"><a href="javascript:return false;" style="opacity:0.2">TMC提交</a></li>
+    </ul>
+    <ul class="nav nav-second-level">
+        <li id="version_history"><a href="{% url 'tartarus:new_version' %}">版本详情</a></li>
+    </ul>
+
+</li>
+
+<li id="ops">
+    <a>
+        <i class="fa fa-coffee" style="width: 14px"></i> <span class="nav-label">{% trans 'Job Center' %}</span><span
+            class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="task"><a href="{% url 'ops:task-list' %}">{% trans 'Task list' %}</a></li>
+        <li id="command-execution"><a href="{% url 'ops:command-execution-start' %}">{% trans 'Batch command' %}</a>
+        </li>
+    </ul>
+</li>
+<li id="audits">
+    <a>
+        <i class="fa fa-history" style="width: 14px"></i> <span class="nav-label">{% trans 'Audits' %}</span><span
+            class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="login-log"><a href="{% url 'audits:login-log-list' %}">{% trans 'Login log' %}</a></li>
+        <li id="ftp-log"><a href="{% url 'audits:ftp-log-list' %}">{% trans 'FTP log' %}</a></li>
+        <li id="operate-log"><a href="{% url 'audits:operate-log-list' %}">{% trans 'Operate log' %}</a></li>
+        <li id="password-change-log"><a
+                href="{% url 'audits:password-change-log-list' %}">{% trans 'Password change log' %}</a></li>
+        <li id="command-execution-log"><a
+                href="{% url 'audits:command-execution-log-list' %}">{% trans 'Batch command' %}</a></li>
+    </ul>
+</li>
+{#<li id="databases">#}
+{#    <a>#}
+{#        <i class="fa fa-history" style="width: 14px"></i> <span class="nav-label">DB管理</span><span class="fa arrow"></span>#}
+{#    </a>#}
+{#    <ul class="nav nav-second-level">#}
+{#        <li id="dbconfig"><a href="{% url 'db:dbconfig' %}">实例列表</a></li>#}
+{#        <li id="dbmanage"><a href="{% url 'db:dbmanage' %}">管理工具</a></li>#}
+{#        <li id="operate-log"><a href="{% url 'db:dbquery' %}">数据查询</a></li>#}
+{#        <li id="password-change-log"><a href="{% url 'db:logs' %}">操作日志</a></li>#}
+{#    </ul>#}
+{#</li>#}
+{#<li id="orders">#}
+{#    <a>#}
+{#        <i class="fa fa-history" style="width: 14px"></i> <span class="nav-label">工单系统</span><span class="fa arrow"></span>#}
+{#    </a>#}
+{#    <ul class="nav nav-second-level">#}
+{#        <li id="list"><a href="{% url 'orders:orders-list' %}">工单列表</a></li>#}
+{#        <li id="apply"><a href="{% url 'orders:orders-apply' %}">工单申请</a></li>#}
+{#    </ul>#}
+{#</li>#}
+{% if XPACK_PLUGINS %}
+    <li id="xpack">
+        <a>
+            <i class="fa fa-sitemap" style="width: 14px"></i> <span class="nav-label">{% trans 'XPack' %}</span><span
+                class="fa arrow"></span>
+        </a>
+        <ul class="nav nav-second-level">
+            {% for plugin in XPACK_PLUGINS %}
+                {% ifequal plugin.name 'cloud' %}
+                    <li id="{{ plugin.name }}">
+                        <a href="#"><span class="nav-label">{% trans plugin.verbose_name %}</span><span
+                                class="fa arrow"></span></a>
+                        <ul class="nav nav-third-level">
+                            <li id="account"><a
+                                    href="{% url 'xpack:cloud:account-list' %}">{% trans 'Account list' %}</a></li>
+                            <li id="sync-instance-task"><a
+                                    href="{% url 'xpack:cloud:sync-instance-task-list' %}">{% trans 'Sync instance' %}</a>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li id="{{ plugin.name }}"><a href="{{ plugin.endpoint }}">{% trans plugin.verbose_name %}</a></li>
+                {% endifequal %}
+            {% endfor %}
+        </ul>
+    </li>
+{% endif %}
+{% if request.user.is_superuser %}
+    <li id="settings">
+        <a href="{% url 'settings:basic-setting' %}">
+            <i class="fa fa-gears"></i> <span class="nav-label">{% trans 'Settings' %}</span><span
+                class="label label-info pull-right"></span>
+        </a>
+    </li>
+{% endif %}
+
+<script>
+    $(document).ready(function () {
+        var current_org = '{{ CURRENT_ORG.name }}';
+        console.log(current_org);
+    })
+</script>
