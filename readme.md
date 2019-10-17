@@ -3,7 +3,7 @@
 > 从opentracing jaeger后端存储Elasticsearch获取并分析数据，统计operation及service的频率，暴露数据给prometheus。
 > add 从Elasticsearch分析并获取opentracing error，prometheus 根据error完成报警触发
 
-### 依赖
+### dependent
 ```$xslt
 go get github.com/elastic/go-elasticsearch
 go get gopkg.in/olivere/elastic.v6
@@ -26,7 +26,7 @@ $ ./kakko
 
 ```
 
-### 构建镜像
+### docker
 ```$xslt
 docker build -t reg-tag.xxxx.com/k8s/jaeger_exporter:v1.0 . 
 
