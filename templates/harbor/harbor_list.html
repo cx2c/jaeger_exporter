@@ -1,0 +1,861 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block help_message %}
+    <div class="alert alert-info help-message">
+        镜像列表，支持以下同步：从DEV仓库dev项目同步至prod项目； 从DEV仓库prod项目同步到PROD仓库prod项目。
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp <a href="sync_images" target=_blank><strong>找不到镜像？点击这里</strong></a>
+    </div>
+{% endblock %}
+
+{% block custom_head_css_js %}
+    <link href="{% static 'css/plugins/ztree/awesomeStyle/awesome.css' %}" rel="stylesheet">
+    {#    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet">#}
+    <script type="text/javascript" src="{% static 'js/plugins/ztree/jquery.ztree.all.min.js' %}"></script>
+    <script src="{% static 'js/jquery.form.min.js' %}"></script>
+    <style type="text/css">
+        div#rMenu {
+            position: absolute;
+            visibility: hidden;
+            text-align: left;
+        {#top: 100%;#} top: 0;
+            left: 0;
+            z-index: 1000;
+        {#float: left;#} padding: 0 0;
+            margin: 2px 0 0;
+            list-style: none;
+            background-clip: padding-box;
+        }
+
+        .dataTables_wrapper .dataTables_processing {
+            opacity: .9;
+            border: none;
+        }
+
+        div#rMenu li {
+            margin: 1px 0;
+            cursor: pointer;
+            list-style: none outside none;
+        }
+
+        .dropdown a:hover {
+            background-color: #f1f1f1
+        }
+    </style>
+
+{% endblock %}
+
+{% block content %}
+    <div class="wrapper wrapper-content">
+        <div class="row">
+            <div class="col-lg-12 animated fadeInRight" id="split-left">
+                <div class="mail-box-header">
+                    <div class="" style="float: right">
+                        <div class=" btn-group">
+                            <button data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle">CSV <span
+                                    class="caret"></span></button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class=" btn_export" tabindex="0">
+                                        <span>{% trans "Export" %}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class=" btn_import" data-toggle="modal" data-target="#import_modal" tabindex="0">
+                                        <span>{% trans "Import" %}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class=" btn_update" data-toggle="modal" data-target="#update_modal" tabindex="0">
+                                        <span>{% trans "Update" %}</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="btn-group" style="float: right">
+                        <button data-toggle="dropdown"
+                                class="btn btn-default btn-sm dropdown-toggle">{% trans 'Label' %} <span
+                                class="caret"></span></button>
+                        <ul class="dropdown-menu labels">
+                            {% for label in labels %}
+                                <li><a style="font-weight: bolder">{{ label.name }}:{{ label.value }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <table class="table table-striped table-bordered table-hover " id="asset_list_table"
+                           style="width: 100%">
+                        <thead>
+                        <tr>
+                            <th class="text-center"><input type="checkbox" class="ipt_check_all"></th>
+                            <th class="text-center">仓库</th>
+                            <th class="text-center">项目</th>
+                            <th class="text-center">名称</th>
+                            <th class="text-center">版本</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <div id="actions" class="hide">
+                        <div class="input-group">
+                            <select class="form-control m-b" style="width: auto" id="slct_bulk_update">
+{#                                <option value="delete">{% trans 'Delete selected' %}</option>#}
+{#                                <option value="update">{% trans 'Update selected' %}</option>#}
+{#                                <option value="remove">{% trans 'Remove from this node' %}</option>#}
+{#                                <option value="deactive">{% trans 'Deactive selected' %}</option>#}
+{#                                <option value="active">{% trans 'Active selected' %}</option>#}
+                                <option value="syncimage">同步镜像</option>
+                            </select>
+                            <div class="input-group-btn pull-left" style="padding-left: 5px;">
+                                <button id='btn_bulk_update' style="height: 32px;" class="btn btn-sm btn-primary">
+                                    {% trans 'Submit' %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rMenu">
+        <ul class="dropdown-menu">
+            <li class="divider"></li>
+            <li id="m_create" tabindex="-1" onclick="addTreeNode();"><a><i
+                    class="fa fa-plus-square-o"></i> {% trans 'Add node' %}</a></li>
+            <li id="m_del" tabindex="-1" onclick="editTreeNode();"><a><i
+                    class="fa fa-pencil-square-o"></i> {% trans 'Rename node' %}</a></li>
+            <li id="m_del" tabindex="-1" onclick="removeTreeNode();"><a><i
+                    class="fa fa-minus-square"></i> {% trans 'Delete node' %}</a></li>
+            <li class="divider"></li>
+            <li id="menu_asset_add" class="btn-add-asset" data-toggle="modal" data-target="#asset_list_modal"
+                tabindex="0"><a><i class="fa fa-copy"></i> {% trans 'Add assets to node' %}</a></li>
+            <li id="menu_asset_move" class="btn-move-asset" data-toggle="modal" data-target="#asset_list_modal"
+                tabindex="0"><a><i class="fa fa-cut"></i> {% trans 'Move assets to node' %}</a></li>
+            <li class="divider"></li>
+            <li id="menu_refresh_hardware_info" class="btn-refresh-hardware" tabindex="-1"><a><i
+                    class="fa fa-refresh"></i> {% trans 'Refresh node hardware info' %}</a></li>
+            <li id="menu_test_connective" class="btn-test-connective" tabindex="-1"><a><i
+                    class="fa fa-chain"></i> {% trans 'Test node connective' %}</a></li>
+            <li class="divider"></li>
+            <li id="menu_refresh_assets_amount" class="btn-refresh-assets-amount" tabindex="-1"><a><i
+                    class="fa fa-refresh"></i> {% trans 'Refresh all node assets amount' %}</a></li>
+            <li class="divider"></li>
+            <li id="show_current_asset" class="btn-show-current-asset" style="display: none;" tabindex="-1"><a><i
+                    class="fa fa-hand-o-up"></i> {% trans 'Display only current node assets' %}</a></li>
+            <li id="show_all_asset" class="btn-show-all-asset" style="display: none;" tabindex="-1"><a><i
+                    class="fa fa-th"></i> {% trans 'Displays all child node assets' %}</a></li>
+            {#        <li id="fresh_tree" class="btn-refresh-tree" tabindex="-1"><a><i class="fa fa-refresh"></i> {% trans 'Refresh' %}</a></li>#}
+        </ul>
+    </div>
+    {% include 'assets/_asset_update_modal.html' %}
+    {% include 'assets/_asset_import_modal.html' %}
+    {% include 'assets/_asset_list_modal.html' %}
+{% endblock %}
+
+{% block custom_foot_js %}
+    <script>
+        var zTree, rMenu, asset_table, show = 0;
+        var update_node_action = "";
+        var current_node_id = null;
+        var current_node = null;
+
+        function initTable() {
+            var options = {
+                ele: $('#asset_list_table'),
+                columnDefs: [
+                    /**
+                    {
+                        targets: 1, createdCell: function (td, cellData, rowData) {
+                            cellData = htmlEscape(cellData);
+                            {% url 'assets:asset-detail' pk=DEFAULT_PK as the_url  %}
+                            var detail_btn = '<a href="{{ the_url }}">' + cellData + '</a>';
+                            $(td).html(detail_btn.replace('{{ DEFAULT_PK }}', rowData.id));
+                        }
+                    },**/
+                    {
+                        targets: 3, createdCell: function (td, cellData, rowData) {
+                            $(td).html(rowData.hardware_info)
+                        }
+                    },/**
+                    {
+                        targets: 4, createdCell: function (td, cellData) {
+                            if (cellData === 1) {
+                                $(td).html('<i class="fa fa-circle text-navy"></i>')
+                            } else if (cellData === 0) {
+                                $(td).html('<i class="fa fa-circle text-danger"></i>')
+                            } else {
+                                $(td).html('<i class="fa fa-circle text-warning"></i>')
+                            }
+                        }
+                    },**/
+                    /**
+                    {
+                        targets: 5, createdCell: function (td, cellData, rowData) {
+                            var update_btn = '<a href="{% url "assets:asset-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace("{{ DEFAULT_PK }}", cellData);
+                            var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn_asset_delete" data-uid="{{ DEFAULT_PK }}">{% trans "Delete" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+                            $(td).html(update_btn + del_btn)
+                        }
+                    }**/
+                ],
+                ajax_url: '{% url "api-harbors:images-list" %}',
+                columns: [
+                    {data: "id"},
+                    {data: "which_harbor"},
+                    {data: "projectsname"},
+                    {data: "name"},
+                ],
+                op_html: $('#actions').html()
+            };
+            asset_table = jumpserver.initServerSideDataTable(options);
+            return asset_table
+        }
+        /**
+        function addTreeNode() {
+            hideRMenu();
+            var parentNode = zTree.getSelectedNodes()[0];
+            if (!parentNode) {
+                return
+            }
+            var url = "{% url 'api-assets:node-children' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", parentNode.meta.node.id);
+            $.post(url, {}, function (data, status) {
+                if (status === "success") {
+                    var newNode = {
+                        id: data["key"],
+                        name: data["value"],
+                        pId: parentNode.id,
+                        meta: {
+                            "node": data
+                        }
+                    };
+                    newNode.checked = zTree.getSelectedNodes()[0].checked;
+                    zTree.addNodes(parentNode, 0, newNode);
+                    var node = zTree.getNodeByParam('id', newNode.id, parentNode);
+                    zTree.editName(node);
+                } else {
+                    alert("{% trans 'Create node failed' %}")
+                }
+            });
+        }
+
+        function removeTreeNode() {
+            hideRMenu();
+            var current_node = zTree.getSelectedNodes()[0];
+            if (!current_node) {
+                return
+            }
+            if (current_node.children && current_node.children.length > 0) {
+                toastr.error("{% trans 'Have child node, cancel' %}");
+            } else if (current_node.meta.node.assets_amount !== 0) {
+                toastr.error("{% trans 'Have assets, cancel' %}");
+            } else {
+                var url = "{% url 'api-assets:node-detail' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
+                $.ajax({
+                    url: url,
+                    method: "DELETE",
+                    success: function () {
+                        zTree.removeNode(current_node);
+                    }
+                });
+            }
+        }
+
+        function editTreeNode() {
+            hideRMenu();
+            var current_node = zTree.getSelectedNodes()[0];
+            if (!current_node) {
+                return
+            }
+            if (current_node) {
+                current_node.name = current_node.meta.node.value;
+            }
+            zTree.editName(current_node);
+        }
+
+        function OnRightClick(event, treeId, treeNode) {
+            if (!treeNode && event.target.tagName.toLowerCase() !== "button" && $(event.target).parents("a").length === 0) {
+                zTree.cancelSelectedNode();
+                showRMenu("root", event.clientX, event.clientY);
+            } else if (treeNode && !treeNode.noR) {
+                zTree.selectNode(treeNode);
+                showRMenu("node", event.clientX, event.clientY);
+            }
+        }
+
+        function showRMenu(type, x, y) {
+            $("#rMenu ul").show();
+            x -= 220;
+            x += document.body.scrollLeft;
+            y += document.body.scrollTop + document.documentElement.scrollTop;
+            rMenu.css({"top": y + "px", "left": x + "px", "visibility": "visible"});
+
+            $("body").bind("mousedown", onBodyMouseDown);
+        }
+        **/
+        function beforeClick(treeId, treeNode, clickFlag) {
+            return true;
+        }
+
+        /**
+         function hideRMenu() {
+            if (rMenu) rMenu.css({"visibility": "hidden"});
+            $("body").unbind("mousedown", onBodyMouseDown);
+        }
+         **/
+        function onBodyMouseDown(event) {
+            if (!(event.target.id === "rMenu" || $(event.target).parents("#rMenu").length > 0)) {
+                rMenu.css({"visibility": "hidden"});
+            }
+        }
+
+
+        function onRename(event, treeId, treeNode, isCancel) {
+            var url = "{% url 'api-assets:node-detail' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
+            var data = {"value": treeNode.name};
+            if (isCancel) {
+                return
+            }
+            APIUpdateAttr({
+                url: url,
+                body: JSON.stringify(data),
+                method: "PATCH",
+                success_message: "{% trans 'Rename success' %}",
+                fail_message: "{% trans 'Rename failed, do not change the root node name' %}",
+                success: function () {
+                    treeNode.name = treeNode.name + ' (' + treeNode.meta.node.assets_amount + ')'
+                    zTree.updateNode(treeNode);
+                    console.log("Success: " + treeNode.name)
+                }
+            })
+        }
+
+        function onSelected(event, treeNode) {
+            current_node = treeNode;
+            current_node_id = treeNode.meta.node.id;
+            zTree.expandNode(current_node, true);
+            var url = asset_table.ajax.url();
+            url = setUrlParam(url, "node_id", current_node_id);
+            url = setUrlParam(url, "show_current_asset", getCookie('show_current_asset'));
+            {#在后端代码里加判断，如果是root node 就列出此node的所有机器#}
+            {#url = setUrlParam(url, "show_current_asset", 1);#}
+            console.log(url);
+            setCookie('node_selected', treeNode.node_id);
+            asset_table.ajax.url(url);
+            asset_table.ajax.reload();
+        }
+
+        function selectQueryNode() {
+            // TODO: 是否应该添加
+            // 暂时忽略之前选中的内容
+            return
+            var query_node_id = $.getUrlParam("node");
+            var cookie_node_id = getCookie('node_selected');
+            var node;
+            var node_id;
+
+            if (query_node_id !== null) {
+                node_id = query_node_id
+            } else if (cookie_node_id !== null) {
+                node_id = cookie_node_id;
+            }
+
+            node = zTree.getNodesByParam("node_id", node_id, null);
+            if (node) {
+                zTree.selectNode(node[0]);
+            }
+        }
+
+        function beforeDrag() {
+            return true
+        }
+
+        function beforeDrop(treeId, treeNodes, targetNode, moveType) {
+            var treeNodesNames = [];
+            $.each(treeNodes, function (index, value) {
+                treeNodesNames.push(value.name);
+            });
+
+            var msg = "你想移动节点: `" + treeNodesNames.join(",") + "` 到 `" + targetNode.name + "` 下吗?";
+            return confirm(msg);
+        }
+
+        function onDrag(event, treeId, treeNodes) {
+        }
+
+        function onDrop(event, treeId, treeNodes, targetNode, moveType) {
+            var treeNodesIds = [];
+            $.each(treeNodes, function (index, value) {
+                treeNodesIds.push(value.meta.node.id);
+            });
+
+            var the_url = "{% url 'api-assets:node-add-children' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", targetNode.meta.node.id);
+            var body = {nodes: treeNodesIds};
+            APIUpdateAttr({
+                url: the_url,
+                method: "PUT",
+                body: JSON.stringify(body)
+            })
+        }
+        /**
+        function initTree() {
+            if (zTree) {
+                return
+            }
+            var url = '{% url 'api-assets:node-children-tree' %}?assets=0&all=';
+            var showCurrentAsset = getCookie('show_current_asset');
+            if (!showCurrentAsset) {
+                url += '1'
+            }
+            var setting = {
+                view: {
+                    dblClickExpand: false,
+                    showLine: true
+                },
+                data: {
+                    simpleData: {
+                        enable: true
+                    }
+                },
+                async: {
+                    enable: true,
+                    url: url,
+                    autoParam: ["id=key", "name=n", "level=lv"],
+                    type: 'get'
+                },
+                edit: {
+                    enable: true,
+                    showRemoveBtn: false,
+                    showRenameBtn: false,
+                    drag: {
+                        isCopy: true,
+                        isMove: true
+                    }
+                },
+                callback: {
+                    onRightClick: OnRightClick,
+                    beforeClick: beforeClick,
+                    onRename: onRename,
+                    onSelected: onSelected,
+                    beforeDrag: beforeDrag,
+                    onDrag: onDrag,
+                    beforeDrop: beforeDrop,
+                    onDrop: onDrop
+                }
+            };
+
+            var zNodes = [];
+            zTree = $.fn.zTree.init($("#assetTree"), setting, zNodes);
+            rMenu = $("#rMenu");
+        }
+        **/
+
+        function toggle() {
+            if (show === 0) {
+                $("#split-left").hide(500, function () {
+                    $("#split-right").attr("class", "col-lg-12");
+                    $("#toggle-icon").attr("class", "fa fa-angle-right fa-x");
+                    show = 1;
+                });
+            } else {
+                $("#split-right").attr("class", "col-lg-9");
+                $("#toggle-icon").attr("class", "fa fa-angle-left fa-x");
+                $("#split-left").show(500);
+                show = 0;
+            }
+        }
+
+        $(document).ready(function () {
+            initTable();
+            {#initTree();#}
+
+            if (getCookie('show_current_asset') === '1') {
+                $('#show_all_asset').css('display', 'inline-block');
+            }
+            else {
+                $('#show_current_asset').css('display', 'inline-block');
+            }
+        })
+            .on('click', '.labels li', function () {
+                var val = $(this).text();
+                $("#asset_list_table_filter input").val(val);
+                asset_table.search(val).draw();
+            })
+            .on('click', '.btn_export', function () {
+                var assets = asset_table.selected;
+                var data = {
+                    'resources': assets
+                };
+                var search = $("input[type='search']").val();
+                var props = {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    success_url: "{% url 'api-assets:asset-list' %}",
+                    format: 'csv',
+                    params: {
+                        search: search,
+                        node_id: current_node_id || ''
+                    }
+                };
+                APIExportData(props);
+            })
+            .on('click', '#btn_import_confirm', function () {
+                var file = document.getElementById('id_file').files[0];
+                if (!file) {
+                    toastr.error("{% trans "Please select file" %}");
+                    return
+                }
+                var url = "{% url 'api-assets:asset-list' %}";
+                if (current_node_id) {
+                    url = setUrlParam(url, 'node_id', current_node_id);
+                }
+                var data_table = $('#asset_list_table').DataTable();
+
+                APIImportData({
+                    url: url,
+                    method: "POST",
+                    body: file,
+                    data_table: data_table
+                });
+            })
+            .on('click', '#download_update_template', function () {
+                var assets = asset_table.selected;
+                var data = {
+                    'resources': assets
+                };
+                var search = $("input[type='search']").val();
+                var props = {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    success_url: "{% url 'api-assets:asset-list' %}?format=csv&template=update",
+                    format: 'csv',
+                    params: {
+                        search: search,
+                        node_id: current_node_id || ''
+                    }
+                };
+                APIExportData(props);
+            })
+            .on('click', '#btn_update_confirm', function () {
+                var file = document.getElementById('update_file').files[0];
+                if (!file) {
+                    toastr.error("{% trans "Please select file" %}");
+                    return
+                }
+                var url = "{% url 'api-assets:asset-list' %}";
+                if (current_node_id) {
+                    url = setUrlParam(url, 'node_id', current_node_id);
+                }
+                var data_table = $('#asset_list_table').DataTable();
+
+                APIImportData({
+                    url: url,
+                    method: "PUT",
+                    body: file,
+                    data_table: data_table
+                });
+            })
+            .on('click', '.btn-create-asset', function () {
+                var url = "{% url 'assets:asset-create' %}";
+                if (current_node_id) {
+                    url += "?node_id=" + current_node_id;
+                }
+                window.open(url, '_self');
+            })
+            .on('click', '.btn-refresh-hardware', function () {
+                var url = "{% url 'api-assets:node-refresh-hardware-info' pk=DEFAULT_PK %}";
+                var the_url = url.replace("{{ DEFAULT_PK }}", current_node_id);
+
+                function success(data) {
+                    rMenu.css({"visibility": "hidden"});
+                    var task_id = data.task;
+                    var url = '{% url "ops:celery-task-log" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", task_id);
+                    window.open(url, '', 'width=800,height=600')
+                }
+
+                APIUpdateAttr({
+                    url: the_url,
+                    method: "GET",
+                    success: success,
+                    flash_message: false
+                });
+
+            })
+            .on('click', '.btn-test-connective', function () {
+                var url = "{% url 'api-assets:node-test-connective' pk=DEFAULT_PK %}";
+                if (!current_node_id) {
+                    return null;
+                }
+                var the_url = url.replace("{{ DEFAULT_PK }}", current_node_id);
+
+                function success(data) {
+                    rMenu.css({"visibility": "hidden"});
+                    var task_id = data.task;
+                    var url = '{% url "ops:celery-task-log" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", task_id);
+                    window.open(url, '', 'width=800,height=600')
+                }
+
+                APIUpdateAttr({
+                    url: the_url,
+                    method: "GET",
+                    success: success,
+                    flash_message: false
+                });
+            })
+            .on('click', '.btn-show-current-asset', function () {
+                hideRMenu();
+                $(this).css('display', 'none');
+                $('#show_all_asset').css('display', 'inline-block');
+                setCookie('show_current_asset', '1');
+                location.reload();
+            })
+            .on('click', '.btn-show-all-asset', function () {
+                hideRMenu();
+                $(this).css('display', 'none');
+                $('#show_current_asset').css('display', 'inline-block');
+                setCookie('show_current_asset', '');
+                location.reload();
+            })
+            .on('click', '.btn-test-connective', function () {
+                hideRMenu();
+
+            })
+            .on('click', '#menu_refresh_assets_amount', function () {
+                hideRMenu();
+                var url = "{% url 'api-assets:refresh-assets-amount' %}";
+                APIUpdateAttr({
+                    'url': url,
+                    'method': 'GET'
+                });
+                window.location.reload();
+            })
+            .on('click', '.btn_asset_delete', function () {
+                var $this = $(this);
+                var $data_table = $("#asset_list_table").DataTable();
+                var name = $(this).closest("tr").find(":nth-child(2)").children('a').html();
+                var uid = $this.data('uid');
+                var the_url = '{% url "api-assets:asset-detail" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", uid);
+                objectDelete($this, name, the_url);
+                setTimeout(function () {
+                    $data_table.ajax.reload();
+                }, 3000);
+            })
+            .on('click', '#btn_bulk_update', function () {
+                var action = $('#slct_bulk_update').val();
+                var id_list = asset_table.selected;
+                if (id_list.length === 0) {
+                    return false;
+                }
+                var the_url = "{% url "harbor:list-image" %}";
+                var data = {
+                    'resources': id_list
+                };
+
+                function refreshTag() {
+                    $('#asset_list_table').DataTable().ajax.reload();
+                }
+
+                function doSyncimage() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": false};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 500);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doDeactive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": false};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 500);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doActive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": true};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 300);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doDelete() {
+                    swal({
+                        title: "{% trans 'Are you sure?' %}",
+                        text: "{% trans 'This will delete the selected assets !!!' %}",
+                        type: "warning",
+                        showCancelButton: true,
+                        cancelButtonText: "{% trans 'Cancel' %}",
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "{% trans 'Confirm' %}",
+                        closeOnConfirm: false
+                    }, function () {
+                        function success(data) {
+                            url = setUrlParam(the_url, 'spm', data.spm);
+                            APIUpdateAttr({
+                                url: url,
+                                method: 'DELETE',
+                                success: refreshTag,
+                                flash_message: false,
+                            });
+                            var msg = "{% trans 'Asset Deleted.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "success");
+                        }
+
+                        function fail() {
+                            var msg = "{% trans 'Asset Deleting failed.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "error");
+                        }
+
+                        APIUpdateAttr({
+                            url: "{% url 'api-common:resources-cache' %}",
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            success: success,
+                            error: fail
+                        })
+                    })
+                }
+
+                function doUpdate() {
+                    function fail(data) {
+                        toastr.error(JSON.parse(data))
+                    }
+
+                    function success(data) {
+                        var url = "{% url 'assets:asset-bulk-update' %}";
+                        location.href = setUrlParam(url, 'spm', data.spm);
+                    }
+
+                    APIUpdateAttr({
+                        url: "{% url 'api-common:resources-cache' %}",
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        flash_message: false,
+                        success: success,
+                        error: fail
+                    })
+                }
+
+                function doRemove() {
+                    var nodes = zTree.getSelectedNodes();
+                    if (!current_node_id) {
+                        return
+                    }
+
+                    var data = {
+                        'assets': id_list
+                    };
+
+                    var success = function () {
+                        asset_table.ajax.reload()
+                    };
+
+                    APIUpdateAttr({
+                        'url': '/api/assets/v1/nodes/' + current_node_id + '/assets/remove/',
+                        'method': 'PUT',
+                        'body': JSON.stringify(data),
+                        'success': success
+                    })
+                }
+
+                switch (action) {
+                    case 'deactive':
+                        doDeactive();
+                        break;
+                    case 'syncimage':
+                        doSyncimage();
+                        break;
+                    case 'delete':
+                        doDelete();
+                        break;
+                    case 'update':
+                        doUpdate();
+                        break;
+                    case 'active':
+                        doActive();
+                        break;
+                    case 'remove':
+                        doRemove();
+                        break;
+                    default:
+                        break;
+                }
+                $(".ipt_check_all").prop("checked", false)
+            })
+            .on('click', '#btn_asset_modal_confirm', function () {
+                var assets_selected = asset_table2.selected;
+                if (!current_node_id) {
+                    return
+                }
+
+                var data = {'assets': assets_selected};
+                var success = function () {
+                    asset_table2.selected = [];
+                    asset_table2.ajax.reload()
+                };
+
+                var url = '';
+                if (update_node_action === "move") {
+                    url = "{% url 'api-assets:node-replace-assets' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
+                } else {
+                    url = "{% url 'api-assets:node-add-assets' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
+                }
+
+                APIUpdateAttr({
+                    'url': url,
+                    'method': 'PUT',
+                    'body': JSON.stringify(data),
+                    'success': success
+                })
+            }).on('hidden.bs.modal', '#asset_list_modal', function () {
+            window.location.reload();
+        }).on('click', '#menu_asset_add', function () {
+            update_node_action = "add"
+        }).on('click', '#menu_asset_move', function () {
+            update_node_action = "move"
+        })
+
+    </script>
+
+{% endblock %}
