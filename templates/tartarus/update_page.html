@@ -1,0 +1,1325 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+
+{% block custom_head_css_js %}
+    <link href="{% static 'css/plugins/ztree/awesomeStyle/awesome.css' %}" rel="stylesheet">
+    <script type="text/javascript" src="{% static 'js/plugins/ztree/jquery.ztree.all.min.js' %}"></script>
+    <script src="{% static 'js/jquery.form.min.js' %}"></script>
+    <style type="text/css">
+
+        .dataTables_wrapper .dataTables_processing {
+            opacity: .9;
+            border: none;
+        }
+
+        div#rMenu li {
+            margin: 1px 0;
+            cursor: pointer;
+            list-style: none outside none;
+        }
+
+        .dropdown a:hover {
+            background-color: #f1f1f1
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block content %}
+    <div class="wrapper wrapper-content">
+
+        <form class="form-inline" action="submit_version" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="3env_id" style="display: none">发版id：</label>
+                <input type="text" id="3env_id" name="3env_id" class="form-control" value="{{ uuids }}"
+                       style="display: none">
+            </div>
+            <div class="form-group">
+                <label for="3env_search">搜索：</label>
+                <input type="text" id="3env_search" name="3env_search" class="form-control">
+            </div>
+            &nbsp&nbsp&nbsp&nbsp
+
+            <div class="form-group">
+                <label for="3env_version">版本：</label>
+                <input type="text" id="3env_version" name="3env_version" class="form-control">
+            </div>
+            &nbsp&nbsp&nbsp&nbsp
+            <div class="form-group">
+                <label for="wiki">wiki:</label>
+                <input type="text" id="wiki" name="wiki" placeholder="" class="form-control" style="width: 200px">
+            </div>
+            &nbsp&nbsp&nbsp
+            <button type="submit" class="btn btn-default" id="3env_more">提交版本啊 不显示</button>
+            <button class="btn btn-success"
+                    style="height: 28px; text-align:center;vertical-align:middle;font-size:13px;">提交发版
+            </button>
+        </form>
+
+
+        <div class="row">
+            {#            # 3in1#}
+
+            <div class="col-lg-4 animated fadeInRight" id="split-left">
+                <h3 style="padding: 0px;margin: 5px">3in1:</h3>
+                <div class="mail-box-header" style="padding-top: 20px">
+                    <div class="" style="float: right">
+                    </div>
+                    <table class="table table-striped table-bordered table-hover " id="asset_list_table"
+                           style="width: 100%">
+                        <thead>
+                        <tr>
+                            <th class="text-center"><input type="checkbox" class="ipt_check_all"></th>
+                            <th class="text-center">名称</th>
+                            <th class="text-center">版本</th>
+                            <th class="text-center">副本数</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <div id="actions_3in1" class="hide">
+                        <div class="input-group">
+                            <select class="form-control m-b" style="width: auto" id="slct_bulk_update_3in1">
+                                <option value="submit_version">提交3in1</option>
+                            </select>
+                            <div class="input-group-btn pull-left" style="padding-left: 5px;">
+                                <button id='btn_bulk_update_3in1' style="height: 32px;" class="btn btn-sm btn-primary">
+                                    提交3in1
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {#            # 原生#}
+            <div class="col-lg-4 animated fadeInRight" id="split-left">
+                <h3 style="padding: 0px;margin: 5px">app:</h3>
+                <div class="mail-box-header" style="padding-top: 20px">
+                    <table class="table table-striped table-bordered table-hover " id="asset_list_table_app"
+                           style="width: 100%">
+                        <thead>
+                        <tr>
+                            <th class="text-center"><input type="checkbox" class="ipt_check_all"></th>
+                            <th class="text-center">仓库</th>
+                            <th class="text-center">项目</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <div id="actions_app" class="hide">
+                        <div class="input-group">
+                            <select class="form-control m-b" style="width: auto" id="slct_bulk_update_app">
+                                <option value="submit_version">提交app</option>
+                            </select>
+                            <div class="input-group-btn pull-left" style="padding-left: 5px;">
+                                <button id='btn_bulk_update_app' style="height: 32px;" class="btn btn-sm btn-primary">
+                                    提交app
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {#             # dingding#}
+            <div class="col-lg-4 animated fadeInRight" id="split-left">
+                <h3 style="padding: 0px;margin: 5px">钉钉:</h3>
+                <div class="mail-box-header" style="padding-top: 20px">
+                    <table class="table table-striped table-bordered table-hover " id="asset_list_table_dingding"
+                           style="width: 100%">
+                        <thead>
+                        <tr>
+                            <th class="text-center"><input type="checkbox" class="ipt_check_all"></th>
+                            <th class="text-center">仓库</th>
+                            <th class="text-center">项目</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <div id="actions_dingding" class="hide">
+                        <div class="input-group">
+                            <select class="form-control m-b" style="width: auto" id="slct_bulk_update_dingding">
+                                <option value="submit_version">提交钉钉</option>
+                            </select>
+                            <div class="input-group-btn pull-left" style="padding-left: 5px;">
+                                <button id='btn_bulk_update_dingding' style="height: 32px;"
+                                        class="btn btn-sm btn-primary">
+                                    提交钉钉
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+    {% include 'assets/_asset_update_modal.html' %}
+    {% include 'assets/_asset_import_modal.html' %}
+    {% include 'assets/_asset_list_modal.html' %}
+{% endblock %}
+
+{% block custom_foot_js %}
+    <script>
+        var zTree, rMenu, asset_table_3in1, asset_table_app, asset_table_dingding, show = 0;
+        var update_node_action = "";
+        var current_node_id = null;
+        var current_node = null;
+
+        /**3 in 1 的deployment列表**/
+        function initTable() {
+            var options = {
+                ele: $('#asset_list_table'),
+                columnDefs: [
+                    /**
+                     {
+                         targets: 1, createdCell: function (td, cellData, rowData) {
+                             cellData = htmlEscape(cellData);
+                        {% url 'tartarus:deployment' pk=DEFAULT_PK as the_url  %}
+                            var detail_btn = '<a href="{{ the_url }}">' + cellData + '</a>';
+                            $(td).html(detail_btn.replace('{{ DEFAULT_PK }}', rowData.id));
+                        }
+                    },**/
+                    /**
+                     {
+                         targets: 3, createdCell: function (td, cellData, rowData) {
+                             $(td).html(rowData.hardware_info)
+                         }
+                     },
+                     **/
+                    /**
+                     {
+                         targets: 4, createdCell: function (td, cellData) {
+                             if (cellData === 1) {
+                                 $(td).html('<i class="fa fa-circle text-navy"></i>')
+                             } else if (cellData === 0) {
+                                 $(td).html('<i class="fa fa-circle text-danger"></i>')
+                             } else {
+                                 $(td).html('<i class="fa fa-circle text-warning"></i>')
+                             }
+                         }
+                     },**/
+                    /**
+                     {
+                         targets: 5, createdCell: function (td, cellData, rowData) {
+                             var update_btn = '<a href="{% url "assets:asset-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace("{{ DEFAULT_PK }}", cellData);
+                            var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn_asset_delete" data-uid="{{ DEFAULT_PK }}">{% trans "Delete" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+                            $(td).html(update_btn + del_btn)
+                        }
+                    }**/
+                ],
+                ajax_url: '{% url "tartarus:deployment" %}/3in1',
+                columns: [
+                    {data: "id", orderable: false},
+                    {data: "name", orderable: false},
+                    {data: "tag", orderable: false},
+                    {data: "replicas", orderable: false},
+                ],
+                op_html: $('#actions_3in1').html()
+            };
+            asset_table_3in1 = jumpserver.initServerSideDataTable(options);
+            return asset_table_3in1
+        }
+
+        /**app原生环境 的deployment列表**/
+        function initTable_app() {
+            var options = {
+                ele: $('#asset_list_table_app'),
+                columnDefs: [
+                    /**
+                     {
+                         targets: 1, createdCell: function (td, cellData, rowData) {
+                             cellData = htmlEscape(cellData);
+                                {% url 'assets:asset-detail' pk=DEFAULT_PK as the_url  %}
+                            var detail_btn = '<a href="{{ the_url }}">' + cellData + '</a>';
+                            $(td).html(detail_btn.replace('{{ DEFAULT_PK }}', rowData.id));
+                        }
+                    },**/
+                    /**
+                     {
+                         targets: 3, createdCell: function (td, cellData, rowData) {
+                             $(td).html(rowData.hardware_info)
+                         }
+                     },
+                     **/
+                    /**
+                     {
+                         targets: 4, createdCell: function (td, cellData) {
+                             if (cellData === 1) {
+                                 $(td).html('<i class="fa fa-circle text-navy"></i>')
+                             } else if (cellData === 0) {
+                                 $(td).html('<i class="fa fa-circle text-danger"></i>')
+                             } else {
+                                 $(td).html('<i class="fa fa-circle text-warning"></i>')
+                             }
+                         }
+                     },**/
+                    /**
+                     {
+                         targets: 5, createdCell: function (td, cellData, rowData) {
+                             var update_btn = '<a href="{% url "assets:asset-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace("{{ DEFAULT_PK }}", cellData);
+                            var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn_asset_delete" data-uid="{{ DEFAULT_PK }}">{% trans "Delete" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+                            $(td).html(update_btn + del_btn)
+                        }
+                    }**/
+                ],
+                ajax_url: '{% url "tartarus:deployment" %}/app',
+                columns: [
+                    {data: "id", orderable: false},
+                    {data: "name", orderable: false},
+                    {data: "tag", orderable: false},
+                    {data: "replicas", orderable: false},
+                ],
+                op_html: $('#actions_app').html()
+            };
+            asset_table_app = jumpserver.initServerSideDataTable(options);
+            return asset_table_app
+        }
+
+        /**钉钉原生环境 的deployment列表**/
+        function initTable_dingding() {
+            var options = {
+                ele: $('#asset_list_table_dingding'),
+                columnDefs: [
+                    /**
+                     {
+                         targets: 1, createdCell: function (td, cellData, rowData) {
+                             cellData = htmlEscape(cellData);
+                                {% url 'assets:asset-detail' pk=DEFAULT_PK as the_url  %}
+                            var detail_btn = '<a href="{{ the_url }}">' + cellData + '</a>';
+                            $(td).html(detail_btn.replace('{{ DEFAULT_PK }}', rowData.id));
+                        }
+                    },**/
+                    /**
+                     {
+                         targets: 3, createdCell: function (td, cellData, rowData) {
+                             $(td).html(rowData.hardware_info)
+                         }
+                     },
+                     **/
+                    /**
+                     {
+                         targets: 4, createdCell: function (td, cellData) {
+                             if (cellData === 1) {
+                                 $(td).html('<i class="fa fa-circle text-navy"></i>')
+                             } else if (cellData === 0) {
+                                 $(td).html('<i class="fa fa-circle text-danger"></i>')
+                             } else {
+                                 $(td).html('<i class="fa fa-circle text-warning"></i>')
+                             }
+                         }
+                     },**/
+                    /**
+                     {
+                         targets: 5, createdCell: function (td, cellData, rowData) {
+                             var update_btn = '<a href="{% url "assets:asset-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace("{{ DEFAULT_PK }}", cellData);
+                            var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn_asset_delete" data-uid="{{ DEFAULT_PK }}">{% trans "Delete" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+                            $(td).html(update_btn + del_btn)
+                        }
+                    }**/
+                ],
+                ajax_url: '{% url "tartarus:deployment" %}/dingding',
+                columns: [
+                    {data: "id", orderable: false},
+                    {data: "name", orderable: false},
+                    {data: "tag", orderable: false},
+                    {data: "replicas", orderable: false},
+                ],
+                op_html: $('#actions_dingding').html()
+            };
+            asset_table_dingding = jumpserver.initServerSideDataTable(options);
+            return asset_table_dingding
+        }
+
+
+        function beforeClick(treeId, treeNode, clickFlag) {
+            return true;
+        }
+
+        function onBodyMouseDown(event) {
+            if (!(event.target.id === "rMenu" || $(event.target).parents("#rMenu").length > 0)) {
+                rMenu.css({"visibility": "hidden"});
+            }
+        }
+
+
+        function onRename(event, treeId, treeNode, isCancel) {
+            var url = "{% url 'api-assets:node-detail' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
+            var data = {"value": treeNode.name};
+            if (isCancel) {
+                return
+            }
+            APIUpdateAttr({
+                url: url,
+                body: JSON.stringify(data),
+                method: "PATCH",
+                success_message: "{% trans 'Rename success' %}",
+                fail_message: "{% trans 'Rename failed, do not change the root node name' %}",
+                success: function () {
+                    treeNode.name = treeNode.name + ' (' + treeNode.meta.node.assets_amount + ')'
+                    zTree.updateNode(treeNode);
+                    console.log("Success: " + treeNode.name)
+                }
+            })
+        }
+
+        function onSelected(event, treeNode) {
+            current_node = treeNode;
+            current_node_id = treeNode.meta.node.id;
+            zTree.expandNode(current_node, true);
+            var url = asset_table.ajax.url();
+            url = setUrlParam(url, "node_id", current_node_id);
+            url = setUrlParam(url, "show_current_asset", getCookie('show_current_asset'));
+            {#在后端代码里加判断，如果是root node 就列出此node的所有机器#}
+            {#url = setUrlParam(url, "show_current_asset", 1);#}
+            console.log(url);
+            setCookie('node_selected', treeNode.node_id);
+            asset_table.ajax.url(url);
+            asset_table.ajax.reload();
+        }
+
+        function selectQueryNode() {
+            // TODO: 是否应该添加
+            // 暂时忽略之前选中的内容
+            return
+            var query_node_id = $.getUrlParam("node");
+            var cookie_node_id = getCookie('node_selected');
+            var node;
+            var node_id;
+
+            if (query_node_id !== null) {
+                node_id = query_node_id
+            } else if (cookie_node_id !== null) {
+                node_id = cookie_node_id;
+            }
+
+            node = zTree.getNodesByParam("node_id", node_id, null);
+            if (node) {
+                zTree.selectNode(node[0]);
+            }
+        }
+
+        function beforeDrag() {
+            return true
+        }
+
+        function beforeDrop(treeId, treeNodes, targetNode, moveType) {
+            var treeNodesNames = [];
+            $.each(treeNodes, function (index, value) {
+                treeNodesNames.push(value.name);
+            });
+
+            var msg = "你想移动节点: `" + treeNodesNames.join(",") + "` 到 `" + targetNode.name + "` 下吗?";
+            return confirm(msg);
+        }
+
+        function onDrag(event, treeId, treeNodes) {
+        }
+
+        function onDrop(event, treeId, treeNodes, targetNode, moveType) {
+            var treeNodesIds = [];
+            $.each(treeNodes, function (index, value) {
+                treeNodesIds.push(value.meta.node.id);
+            });
+
+            var the_url = "{% url 'api-assets:node-add-children' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", targetNode.meta.node.id);
+            var body = {nodes: treeNodesIds};
+            APIUpdateAttr({
+                url: the_url,
+                method: "PUT",
+                body: JSON.stringify(body)
+            })
+        }
+
+        function toggle() {
+            if (show === 0) {
+                $("#split-left").hide(500, function () {
+                    $("#split-right").attr("class", "col-lg-12");
+                    $("#toggle-icon").attr("class", "fa fa-angle-right fa-x");
+                    show = 1;
+                });
+            } else {
+                $("#split-right").attr("class", "col-lg-9");
+                $("#toggle-icon").attr("class", "fa fa-angle-left fa-x");
+                $("#split-left").show(500);
+                show = 0;
+            }
+        }
+
+
+        $(document).ready(function () {
+            initTable();
+            initTable_app();
+            initTable_dingding();
+            $('#input').bind('input propertychange', function () {
+                alert("....")
+            });
+            if (getCookie('show_current_asset') === '1') {
+                $('#show_all_asset').css('display', 'inline-block');
+            }
+            else {
+                $('#show_current_asset').css('display', 'inline-block');
+            }
+        })
+
+            .on('click', '.labels li', function () {
+                var val = $(this).text();
+                $("#asset_list_table_filter input").val(val);
+                asset_table.search(val).draw();
+            })
+            .on('click', '.btn_export', function () {
+                var assets = asset_table_dingding.selected;
+                var data = {
+                    'resources': assets
+                };
+                var search = $("input[type='search']").val();
+                var props = {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    success_url: "{% url 'api-assets:asset-list' %}",
+                    format: 'csv',
+                    params: {
+                        search: search,
+                        node_id: current_node_id || ''
+                    }
+                };
+                APIExportData(props);
+            })
+            .on('click', '#btn_import_confirm', function () {
+                var file = document.getElementById('id_file').files[0];
+                if (!file) {
+                    toastr.error("{% trans "Please select file" %}");
+                    return
+                }
+                var url = "{% url 'api-assets:asset-list' %}";
+                if (current_node_id) {
+                    url = setUrlParam(url, 'node_id', current_node_id);
+                }
+                var data_table = $('#asset_list_table').DataTable();
+
+                APIImportData({
+                    url: url,
+                    method: "POST",
+                    body: file,
+                    data_table: data_table
+                });
+            })
+            .on('click', '#download_update_template', function () {
+                var assets = asset_table.selected;
+                var data = {
+                    'resources': assets
+                };
+                var search = $("input[type='search']").val();
+                var props = {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    success_url: "{% url 'api-assets:asset-list' %}?format=csv&template=update",
+                    format: 'csv',
+                    params: {
+                        search: search,
+                        node_id: current_node_id || ''
+                    }
+                };
+                APIExportData(props);
+            })
+            .on('click', '#btn_update_confirm', function () {
+                var file = document.getElementById('update_file').files[0];
+                if (!file) {
+                    toastr.error("{% trans "Please select file" %}");
+                    return
+                }
+                var url = "{% url 'api-assets:asset-list' %}";
+                if (current_node_id) {
+                    url = setUrlParam(url, 'node_id', current_node_id);
+                }
+                var data_table = $('#asset_list_table').DataTable();
+
+                APIImportData({
+                    url: url,
+                    method: "PUT",
+                    body: file,
+                    data_table: data_table
+                });
+            })
+            .on('click', '.btn-create-asset', function () {
+                var url = "{% url 'assets:asset-create' %}";
+                if (current_node_id) {
+                    url += "?node_id=" + current_node_id;
+                }
+                window.open(url, '_self');
+            })
+            .on('click', '.btn-refresh-hardware', function () {
+                var url = "{% url 'api-assets:node-refresh-hardware-info' pk=DEFAULT_PK %}";
+                var the_url = url.replace("{{ DEFAULT_PK }}", current_node_id);
+
+                function success(data) {
+                    rMenu.css({"visibility": "hidden"});
+                    var task_id = data.task;
+                    var url = '{% url "ops:celery-task-log" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", task_id);
+                    window.open(url, '', 'width=800,height=600')
+                }
+
+                APIUpdateAttr({
+                    url: the_url,
+                    method: "GET",
+                    success: success,
+                    flash_message: false
+                });
+
+            })
+            .on('click', '.btn-test-connective', function () {
+                var url = "{% url 'api-assets:node-test-connective' pk=DEFAULT_PK %}";
+                if (!current_node_id) {
+                    return null;
+                }
+                var the_url = url.replace("{{ DEFAULT_PK }}", current_node_id);
+
+                function success(data) {
+                    rMenu.css({"visibility": "hidden"});
+                    var task_id = data.task;
+                    var url = '{% url "ops:celery-task-log" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", task_id);
+                    window.open(url, '', 'width=800,height=600')
+                }
+
+                APIUpdateAttr({
+                    url: the_url,
+                    method: "GET",
+                    success: success,
+                    flash_message: false
+                });
+            })
+            .on('click', '.btn-show-current-asset', function () {
+                hideRMenu();
+                $(this).css('display', 'none');
+                $('#show_all_asset').css('display', 'inline-block');
+                setCookie('show_current_asset', '1');
+                location.reload();
+            })
+            .on('click', '.btn-show-all-asset', function () {
+                hideRMenu();
+                $(this).css('display', 'none');
+                $('#show_current_asset').css('display', 'inline-block');
+                setCookie('show_current_asset', '');
+                location.reload();
+            })
+            .on('click', '.btn-test-connective', function () {
+                hideRMenu();
+
+            })
+            .on('click', '#menu_refresh_assets_amount', function () {
+                hideRMenu();
+                var url = "{% url 'api-assets:refresh-assets-amount' %}";
+                APIUpdateAttr({
+                    'url': url,
+                    'method': 'GET'
+                });
+                window.location.reload();
+            })
+            .on('click', '.btn_asset_delete', function () {
+                var $this = $(this);
+                var $data_table = $("#asset_list_table").DataTable();
+                var name = $(this).closest("tr").find(":nth-child(2)").children('a').html();
+                var uid = $this.data('uid');
+                var the_url = '{% url "api-assets:asset-detail" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", uid);
+                objectDelete($this, name, the_url);
+                setTimeout(function () {
+                    $data_table.ajax.reload();
+                }, 3000);
+            })
+
+            /*提交发版页面的几个datatable*/
+            .on('click', '#btn_bulk_update_3in1', function () {
+                console.log("触发click");
+                var action = $('#slct_bulk_update_3in1').val();
+                var id_list = asset_table_3in1.selected;
+                console.log(id_list);
+                var env3_id = $("#3env_id").val();
+                console.log(env3_id);
+                if (id_list.length === 0) {
+                    return false;
+                }
+                console.log(id_list.length);
+                var the_url = "{% url "tartarus:submit_version" %}";
+                var data = {
+                    'resources': id_list,
+                    'env': '3in1',
+                    "3env_id": env3_id
+                };
+                console.log(the_url, data);
+
+                function refreshTag() {
+                    $('#asset_list_table').DataTable().ajax.reload();
+                }
+
+                function doSubmitversion() {
+
+                    function fail(data) {
+                        toastr.error(JSON.parse(data))
+                    }
+
+                    function success(data) {
+                        /**
+                         var url = "{% url 'tartarus:new_version' %}";
+                         location.href = setUrlParam(url, 'spm', data.spm);**/
+                        console.log(data)
+                    }
+
+                    APIUpdateAttr({
+                        url: "{% url "tartarus:submit_version" %}",
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        flash_message: false,
+                        success: success,
+                        error: fail
+                    })
+                }
+
+                function doDeactive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": false};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 500);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doActive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": true};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 300);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doDelete() {
+                    swal({
+                        title: "{% trans 'Are you sure?' %}",
+                        text: "{% trans 'This will delete the selected assets !!!' %}",
+                        type: "warning",
+                        showCancelButton: true,
+                        cancelButtonText: "{% trans 'Cancel' %}",
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "{% trans 'Confirm' %}",
+                        closeOnConfirm: false
+                    }, function () {
+                        function success(data) {
+                            url = setUrlParam(the_url, 'spm', data.spm);
+                            APIUpdateAttr({
+                                url: url,
+                                method: 'DELETE',
+                                success: refreshTag,
+                                flash_message: false,
+                            });
+                            var msg = "{% trans 'Asset Deleted.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "success");
+                        }
+
+                        function fail() {
+                            var msg = "{% trans 'Asset Deleting failed.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "error");
+                        }
+
+                        APIUpdateAttr({
+                            url: "{% url 'api-common:resources-cache' %}",
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            success: success,
+                            error: fail
+                        })
+                    })
+                }
+
+                function doUpdate() {
+                    function fail(data) {
+                        toastr.error(JSON.parse(data))
+                    }
+
+                    function success(data) {
+                        var url = "{% url 'assets:asset-bulk-update' %}";
+                        location.href = setUrlParam(url, 'spm', data.spm);
+                    }
+
+                    APIUpdateAttr({
+                        url: "{% url 'api-common:resources-cache' %}",
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        flash_message: false,
+                        success: success,
+                        error: fail
+                    })
+                }
+
+                function doRemove() {
+                    var nodes = zTree.getSelectedNodes();
+                    if (!current_node_id) {
+                        return
+                    }
+
+                    var data = {
+                        'assets': id_list
+                    };
+
+                    var success = function () {
+                        asset_table.ajax.reload()
+                    };
+
+                    APIUpdateAttr({
+                        'url': '/api/assets/v1/nodes/' + current_node_id + '/assets/remove/',
+                        'method': 'PUT',
+                        'body': JSON.stringify(data),
+                        'success': success
+                    })
+                }
+
+                switch (action) {
+                    case 'deactive':
+                        doDeactive();
+                        break;
+                    case 'submit_version':
+                        doSubmitversion();
+                        break;
+                    case 'delete':
+                        doDelete();
+                        break;
+                    case 'update':
+                        doUpdate();
+                        break;
+                    case 'active':
+                        doActive();
+                        break;
+                    case 'remove':
+                        doRemove();
+                        break;
+                    default:
+                        break;
+                }
+                $(".ipt_check_all").prop("checked", false)
+            })
+            .on('click', '#btn_bulk_update_app', function () {
+                var action = $('#slct_bulk_update_app').val();
+                var id_list = asset_table_app.selected;
+                var env3_id = $("#3env_id").val();
+                if (id_list.length === 0) {
+                    return false;
+                }
+                var the_url = "{% url "tartarus:submit_version" %}";
+                var data = {
+                    'resources': id_list,
+                    'env': 'app',
+                    "3env_id": env3_id
+                };
+                function refreshTag() {
+                    $('#asset_list_table').DataTable().ajax.reload();
+                }
+
+                function doSubmitversion() {
+
+                    function fail(data) {
+                        toastr.error(JSON.parse(data))
+                    }
+
+                    function success(data) {
+                        /**
+                         var url = "{% url 'tartarus:new_version' %}";
+                         location.href = setUrlParam(url, 'spm', data.spm);**/
+                        console.log(data)
+                    }
+
+                    APIUpdateAttr({
+                        url: "{% url "tartarus:submit_version" %}",
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        flash_message: false,
+                        success: success,
+                        error: fail
+                    })
+                }
+
+                function doDeactive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": false};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 500);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doActive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": true};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 300);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doDelete() {
+                    swal({
+                        title: "{% trans 'Are you sure?' %}",
+                        text: "{% trans 'This will delete the selected assets !!!' %}",
+                        type: "warning",
+                        showCancelButton: true,
+                        cancelButtonText: "{% trans 'Cancel' %}",
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "{% trans 'Confirm' %}",
+                        closeOnConfirm: false
+                    }, function () {
+                        function success(data) {
+                            url = setUrlParam(the_url, 'spm', data.spm);
+                            APIUpdateAttr({
+                                url: url,
+                                method: 'DELETE',
+                                success: refreshTag,
+                                flash_message: false,
+                            });
+                            var msg = "{% trans 'Asset Deleted.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "success");
+                        }
+
+                        function fail() {
+                            var msg = "{% trans 'Asset Deleting failed.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "error");
+                        }
+
+                        APIUpdateAttr({
+                            url: "{% url 'api-common:resources-cache' %}",
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            success: success,
+                            error: fail
+                        })
+                    })
+                }
+
+                function doUpdate() {
+                    function fail(data) {
+                        toastr.error(JSON.parse(data))
+                    }
+
+                    function success(data) {
+                        var url = "{% url 'assets:asset-bulk-update' %}";
+                        location.href = setUrlParam(url, 'spm', data.spm);
+                    }
+
+                    APIUpdateAttr({
+                        url: "{% url 'api-common:resources-cache' %}",
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        flash_message: false,
+                        success: success,
+                        error: fail
+                    })
+                }
+
+                function doRemove() {
+                    var nodes = zTree.getSelectedNodes();
+                    if (!current_node_id) {
+                        return
+                    }
+
+                    var data = {
+                        'assets': id_list
+                    };
+
+                    var success = function () {
+                        asset_table.ajax.reload()
+                    };
+
+                    APIUpdateAttr({
+                        'url': '/api/assets/v1/nodes/' + current_node_id + '/assets/remove/',
+                        'method': 'PUT',
+                        'body': JSON.stringify(data),
+                        'success': success
+                    })
+                }
+
+                switch (action) {
+                    case 'deactive':
+                        doDeactive();
+                        break;
+                    case 'submit_version':
+                        doSubmitversion();
+                        break;
+                    case 'delete':
+                        doDelete();
+                        break;
+                    case 'update':
+                        doUpdate();
+                        break;
+                    case 'active':
+                        doActive();
+                        break;
+                    case 'remove':
+                        doRemove();
+                        break;
+                    default:
+                        break;
+                }
+                $(".ipt_check_all").prop("checked", false)
+            })
+            .on('click', '#btn_bulk_update_dingding', function () {
+                var action = $('#slct_bulk_update_dingding').val();
+                var id_list = asset_table_dingding.selected;
+                var env3_id = $("#3env_id").val();
+                if (id_list.length === 0) {
+                    return false;
+                }
+                var the_url = "{% url "tartarus:submit_version" %}";
+                var data = {
+                    'resources': id_list,
+                    'env': 'dingding',
+                    "3env_id": env3_id
+                };
+
+                function refreshTag() {
+                    $('#asset_list_table').DataTable().ajax.reload();
+                }
+
+                function doSubmitversion() {
+
+                    function fail(data) {
+                        toastr.error(JSON.parse(data))
+                    }
+
+                    function success(data) {
+                        /**
+                         var url = "{% url 'tartarus:new_version' %}";
+                         location.href = setUrlParam(url, 'spm', data.spm);**/
+                        console.log(data)
+                    }
+
+                    APIUpdateAttr({
+                        url: "{% url "tartarus:submit_version" %}",
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        flash_message: false,
+                        success: success,
+                        error: fail
+                    })
+                }
+
+                function doDeactive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": false};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 500);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doActive() {
+                    var data = [];
+                    $.each(id_list, function (index, object_id) {
+                        var obj = {"pk": object_id, "is_active": true};
+                        data.push(obj);
+                    });
+
+                    function success() {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 300);
+                    }
+
+                    APIUpdateAttr({
+                        url: the_url,
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        success: success
+                    });
+                }
+
+                function doDelete() {
+                    swal({
+                        title: "{% trans 'Are you sure?' %}",
+                        text: "{% trans 'This will delete the selected assets !!!' %}",
+                        type: "warning",
+                        showCancelButton: true,
+                        cancelButtonText: "{% trans 'Cancel' %}",
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "{% trans 'Confirm' %}",
+                        closeOnConfirm: false
+                    }, function () {
+                        function success(data) {
+                            url = setUrlParam(the_url, 'spm', data.spm);
+                            APIUpdateAttr({
+                                url: url,
+                                method: 'DELETE',
+                                success: refreshTag,
+                                flash_message: false,
+                            });
+                            var msg = "{% trans 'Asset Deleted.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "success");
+                        }
+
+                        function fail() {
+                            var msg = "{% trans 'Asset Deleting failed.' %}";
+                            swal("{% trans 'Asset Delete' %}", msg, "error");
+                        }
+
+                        APIUpdateAttr({
+                            url: "{% url 'api-common:resources-cache' %}",
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            success: success,
+                            error: fail
+                        })
+                    })
+                }
+
+                function doUpdate() {
+                    function fail(data) {
+                        toastr.error(JSON.parse(data))
+                    }
+
+                    function success(data) {
+                        var url = "{% url 'assets:asset-bulk-update' %}";
+                        location.href = setUrlParam(url, 'spm', data.spm);
+                    }
+
+                    APIUpdateAttr({
+                        url: "{% url 'api-common:resources-cache' %}",
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        flash_message: false,
+                        success: success,
+                        error: fail
+                    })
+                }
+
+                function doRemove() {
+                    var nodes = zTree.getSelectedNodes();
+                    if (!current_node_id) {
+                        return
+                    }
+
+                    var data = {
+                        'assets': id_list
+                    };
+
+                    var success = function () {
+                        asset_table.ajax.reload()
+                    };
+
+                    APIUpdateAttr({
+                        'url': '/api/assets/v1/nodes/' + current_node_id + '/assets/remove/',
+                        'method': 'PUT',
+                        'body': JSON.stringify(data),
+                        'success': success
+                    })
+                }
+
+                switch (action) {
+                    case 'deactive':
+                        doDeactive();
+                        break;
+                    case 'submit_version':
+                        doSubmitversion();
+                        break;
+                    case 'delete':
+                        doDelete();
+                        break;
+                    case 'update':
+                        doUpdate();
+                        break;
+                    case 'active':
+                        doActive();
+                        break;
+                    case 'remove':
+                        doRemove();
+                        break;
+                    default:
+                        break;
+                }
+                $(".ipt_check_all").prop("checked", false)
+            })
+
+            .on('click', '#btn_asset_modal_confirm', function () {
+                var assets_selected = asset_table2.selected;
+                if (!current_node_id) {
+                    return
+                }
+
+                var data = {'assets': assets_selected};
+                var success = function () {
+                    asset_table2.selected = [];
+                    asset_table2.ajax.reload()
+                };
+
+                var url = '';
+                if (update_node_action === "move") {
+                    url = "{% url 'api-assets:node-replace-assets' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
+                } else {
+                    url = "{% url 'api-assets:node-add-assets' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
+                }
+
+                APIUpdateAttr({
+                    'url': url,
+                    'method': 'PUT',
+                    'body': JSON.stringify(data),
+                    'success': success
+                })
+            }).on('hidden.bs.modal', '#asset_list_modal', function () {
+            window.location.reload();
+        }).on('click', '#menu_asset_add', function () {
+            update_node_action = "add"
+        }).on('click', '#menu_asset_move', function () {
+            update_node_action = "move"
+        })
+
+        {#联合搜索,三个环境一起搜#}
+        $("#3env_search").keyup(function () {
+            var val_search = $(this).val();
+            var e1 = jQuery.Event('keyup');
+            $("#asset_list_table_filter input").eq(0).val(val_search);
+            $("#asset_list_table_filter input").trigger(e1);
+
+            $("#asset_list_table_app_filter input").eq(0).val(val_search);
+            $("#asset_list_table_app_filter input").trigger(e1);
+
+            $("#asset_list_table_dingding_filter input").eq(0).val(val_search);
+            $("#asset_list_table_dingding_filter input").trigger(e1);
+
+            $("#3env_search").css("background-color", "#D6D6FF");
+        });
+
+
+        $("tbody tr td input").click(function () {
+            console.log("1")
+        });
+
+        $("tbody tr td input").eq(30).parent().parent().eq(0).addClass("selected")
+
+
+        // 生成短链接
+        /**
+         $("#wiki").keyup(function () {
+            var val_search = $(this).val();
+            var long = $(this).val();
+            //请求访问短链接网址
+            var url2 = "http://api.weibo.com/2/short_url/shorten.json";
+            var app_key = "568248589";
+            var cmd2 = url2 + "?source=" + app_key + "&url_long=" + long;
+            $.ajax({ //底层方法；
+                url: cmd2,
+                type: "GET",
+                dataType: "jsonp", //使用JSONP方法进行AJAX,json有跨域问题；
+                cache: false,
+                success: function (data, status) {
+                    $(this).val(data.data.urls[0].url_short);
+                    //   返回的短链接
+                    console.log(data.data.urls[0].url_short)
+                },
+                error: function (obj, info, errObj) {
+                    console.log("新浪接口出错:" + info + " " + errObj);
+                }
+            });
+
+
+        });**/
+        //生成短链接 百度接口
+        $("#wiki").keyup(function () {
+            var ajax = new XMLHttpRequest();
+            var token = 'ff0f5703bb70debb44db74f4229ca6d3';
+            var longUrl = $(this).val();
+            var termOfValidity = '1-year';
+
+            ajax.open('post', 'https://dwz.cn/admin/v2/create', 'true');
+
+            ajax.setRequestHeader("Content-Type", "application/json");
+            ajax.setRequestHeader("Token", token);
+
+            // 发送请求
+            ajax.send(JSON.stringify({
+                Url: longUrl,
+                TermOfValidity: termOfValidity
+            }));
+
+            ajax.onreadystatechange = function () {
+                if (ajax.readyState === 4 && ajax.status === 200) {
+                    // 获取缩短后的网址
+                    var  dd = jQuery.parseJSON(ajax.responseText)
+                    $("#wiki").val(dd.ShortUrl);
+                    console.log(dd.ShortUrl);
+                }
+            }
+        })
+
+
+    </script>
+
+
+{% endblock %}
