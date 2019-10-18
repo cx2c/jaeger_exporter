@@ -1,7 +1,7 @@
 # Prometheus Jaeger  Exporter  (Elasticsearch)
  
-> 从opentracing jaeger后端存储Elasticsearch获取并分析数据，统计operation及service的频率，暴露数据给prometheus。
-> add 从Elasticsearch分析并获取opentracing error，prometheus 根据error完成报警触发
+> Opentracing Jaeger. Form Elasticsearch obtain and analyze datacalculate the frequency ofoperation and service, And expose 
+> the data to Prometheus. Analyzes and gets opentracing error from Elasticsearch Prometheus completed according to the error  > alarm is triggered
 
 ### dependent
 ```$xslt
